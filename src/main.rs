@@ -1,7 +1,7 @@
 use axum::{
     routing::get,
     Router,
-    extract::Path,
+    extract::{Path,State},
 
 };
 use std::net::SocketAddr;
@@ -15,9 +15,8 @@ async fn main() {
     let default_logger: Arc<Logger> = spdlog::default_logger();
     info!(logger: default_logger, "hello, world");
     
-
-
-    let app = Router::new().route("/:id", get(handler)); // http://127.0.0.1:3000
+//参考https://github.com/tokio-rs/axum/blob/main/examples/error-handling-and-dependency-injection/src/main.rs
+    let app = Router::new().route("/:id", get(handler).with_state(default_logger)); // http://127.0.0.1:3000
 
     let addr = SocketAddr::from(([127, 0, 0, 1], 3000));
     // run it with hyper on localhost:3000
@@ -34,8 +33,11 @@ async fn main() {
 //     info!(logger: default_logger, "hello, world");
 //     "Hello, World!"
 // }
-async fn handler(Path(id): Path<i32>) -> String {
-    let default_logger: Arc<Logger> = spdlog::default_logger();
+
+
+
+async fn handler(Path(id): Path<i32>, State(default_logger): State<Arc<Logger>>) -> String {
+
      info!(logger: default_logger, "hello, world");
 
     format!("user id:{}", id)
